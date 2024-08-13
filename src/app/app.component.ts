@@ -59,6 +59,7 @@ export class AppComponent implements OnInit {
     const user = this.form.value as Contact;
 
     if (this.mode === ModeEnum.ADD) {
+      user.id = 0;
       this.contactService.addContact(user).subscribe(
         (data) => {
           console.log('Data fetched:', data);                    
