@@ -44,6 +44,12 @@
   <div class="card align-self-center w-75">
     <h4 class="card-header text-center">Contacts List</h4>
     <div class="card-body">
+      <div class="text-end">
+        <input type="search" class="d-inline-block form-control form-control-sm mb-3 me-2 w-25" placeholder="Search Contacts" [(ngModel)]="searchTerm" (input)="filterContacts()" />
+        <button type="button" class="btn btn-primary btn-sm" (click)="addNewContact()">
+          Add New Contact
+        </button>
+      </div>      
       <table class="table">
         <thead>
           <tr>
@@ -55,8 +61,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (contact of contacts; track contact) {
-            <tr>
+            <tr *ngFor="let contact of paginatedContacts">
               <th scope="row">{{ contact.id }}</th>
               <td>{{ contact.firstName }}</td>
               <td>{{ contact.lastName }}</td>
@@ -69,22 +74,28 @@
                   Delete
                 </button>
               </td>
-            </tr>
-          }
+            </tr>          
         </tbody>
       </table>
     </div>
-    <div class="card-footer text-end">
-      <button type="button" class="btn btn-primary" (click)="addNewContact()">
-        Add New Contact
-      </button>
+    <div class="card-footer text-end">      
+      <div class="d-inline-block">
+        <span *ngIf="contacts.length > 0" class="mt-2">
+          <span class="me-2">{{ getPaginationDetails() }}</span>
+        </span>
+        <span>
+          <button [disabled]="currentPage === 1" (click)="previousPage()" class="btn btn-sm btn-secondary me-1">Previous</button>
+          <span>Page {{currentPage}} of {{totalPages}}</span>
+          <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn btn-sm btn-secondary ms-1">Next</button>
+        </span>
+      </div>      
     </div>
   </div>
 }
 
   @if (mode !==  ModeEnum.NON) {
     <div class="card align-self-center w-50 mt-4">
-      <h4 class="card-header text-center">Add/Edit Contact</h4>
+      <h4 class="card-header text-center">{{ mode === ModeEnum.ADD ? 'Add New Contact' : 'Edit Contact' }}</h4>
       <div class="card-body">
         <form [formGroup]="form">
           <div class="mb-3 row">
@@ -107,7 +118,10 @@
                 <div class="col-sm-10">
                   <input type="text" id="email" placeholder="Email" formControlName="email" class="form-control"
                     [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched" />
+                  <div *ngIf="form.controls.email.invalid && form.controls.email.touched && form.controls.email.value" class="invalid-feedback">
+                    Please enter a valid email address.
                   </div>
+                </div>
                 </div>
             </form>
           </div>
