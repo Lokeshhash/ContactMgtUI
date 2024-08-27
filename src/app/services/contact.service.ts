@@ -30,7 +30,7 @@ export class ContactService {
     );
   }
 
-  deleteContact(user: Contact) {
+  deleteContact(user: any) {
     return this.http.delete<Contact>(`${this.apiBaseUrl}/Contacts/${user.id}`);
   }
 

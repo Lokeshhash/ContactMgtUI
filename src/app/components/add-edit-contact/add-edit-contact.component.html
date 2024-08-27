@@ -1,0 +1,40 @@
+<div class="card align-self-center" style="margin: 0 auto">
+    <!-- <h4 class="card-header text-center">{{ mode === ModeEnum.ADD ? 'Add New Contact' : 'Edit Contact' }}</h4> -->
+    <div class="card-body">
+      <form [formGroup]="form">
+        <div class="mb-3 row">
+          <label for="firstName" class="col-sm-2 col-form-label">First Name</label>
+          <div class="col-sm-10">
+            <input type="text" id="firstName" placeholder="First Name" formControlName="firstName" class="form-control"
+              [class.is-invalid]="form.controls.firstName.invalid && form.controls.firstName.touched" />
+          </div>
+        </div>
+        <div class="mb-3 row">
+          <label for="lastName" class="col-sm-2 col-form-label">Last Name</label>
+          <div class="col-sm-10">
+            <input type="text" id="lastName" placeholder="Last Name" formControlName="lastName" class="form-control"
+              [class.is-invalid]="form.controls.lastName.invalid && form.controls.lastName.touched" />
+          </div>
+        </div>
+        <div class="mb-3 row">
+          <label for="email" class="col-sm-2 col-form-label">Email</label>
+          <div class="col-sm-10">
+            <input type="text" id="email" placeholder="Email" formControlName="email" class="form-control"
+              [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched" />
+            <div *ngIf="form.controls.email.invalid && form.controls.email.touched && form.controls.email.value" class="invalid-feedback">
+              Please enter a valid email address.
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="card-footer d-flex justify-content-end">
+      <button type="button" class="btn btn-sm btn-success me-1" (click)="submit()">
+        Submit
+      </button>
+      <button type="button" class="btn btn-sm btn-default" data-bs-dismiss="modal" (click)="onCancel()">
+        Cancel
+      </button>
+    </div>
+  </div>
+  

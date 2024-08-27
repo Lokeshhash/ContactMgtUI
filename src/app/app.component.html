@@ -9,23 +9,6 @@
         <li class="nav-item">
           <a class="nav-link active" aria-current="page" href="#">Home</a>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
-        </li> -->
-        <!-- <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Dropdown
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-        </li> -->
       </ul>
       <form class="d-flex" role="search">
         <!-- <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"> -->
@@ -36,14 +19,16 @@
 </nav>
 
 
-
-
-
-<div class="d-flex flex-column mt-4">
-  @if (mode ===  ModeEnum.NON) {
+<div class="d-flex flex-column mt-4">  
   <div class="card align-self-center w-75">
-    <h4 class="card-header text-center">Contacts List</h4>
+    <h4 class="card-header text-left">Contacts</h4>
     <div class="card-body">
+      <div class="text-end">
+        <input type="search" class="d-inline-block form-control form-control-sm mb-3 me-2 w-25" placeholder="Search Contacts" [(ngModel)]="searchTerm" (input)="filterContacts()" />
+        <button type="button" class="btn btn-primary btn-sm" (click)="addNewContact()" data-bs-toggle="modal" data-bs-target="#AddEditModal">
+          Add New Contact
+        </button>
+      </div>      
       <table class="table">
         <thead>
           <tr>
@@ -55,70 +40,69 @@
           </tr>
         </thead>
         <tbody>
-          @for (contact of contacts; track contact) {
-            <tr>
+            <tr *ngFor="let contact of paginatedContacts">
               <th scope="row">{{ contact.id }}</th>
               <td>{{ contact.firstName }}</td>
               <td>{{ contact.lastName }}</td>
               <td>{{ contact.email }}</td>
               <td>
-                <button type="button" class="btn btn-sm btn-primary me-1" (click)="editContact(contact)">
+                <button type="button" class="btn btn-sm btn-primary me-1" (click)="editContact(contact)" data-bs-toggle="modal" data-bs-target="#AddEditModal">
                   Edit
                 </button>
-                <button type="button" class="btn btn-sm btn-danger" (click)="removeContacts(contact)">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" (click)="openDeleteConfirmationDialog(contact)">
                   Delete
                 </button>
               </td>
-            </tr>
-          }
+            </tr>          
         </tbody>
       </table>
     </div>
-    <div class="card-footer text-end">
-      <button type="button" class="btn btn-primary" (click)="addNewContact()">
-        Add New Contact
-      </button>
+    <div class="card-footer text-end">      
+      <div class="d-inline-block">
+        <span *ngIf="contacts.length > 0" class="mt-2">
+          <span class="me-2">{{ getPaginationDetails() }}</span>
+        </span>
+        <span>
+          <button [disabled]="currentPage === 1" (click)="previousPage()" class="btn btn-sm btn-secondary me-1">Previous</button>
+          <span>Page {{currentPage}} of {{totalPages}}</span>
+          <button [disabled]="currentPage === totalPages" (click)="nextPage()" class="btn btn-sm btn-secondary ms-1">Next</button>
+        </span>
+      </div>      
     </div>
   </div>
-}
 
-  @if (mode !==  ModeEnum.NON) {
-    <div class="card align-self-center w-50 mt-4">
-      <h4 class="card-header text-center">Add/Edit Contact</h4>
-      <div class="card-body">
-        <form [formGroup]="form">
-          <div class="mb-3 row">
-            <label for="firstName" class="col-sm-2 col-form-label">First Name</label>
-            <div class="col-sm-10">
-              <input type="text" id="firstName" placeholder="First Name" formControlName="firstName" class="form-control"
-                [class.is-invalid]="form.controls.firstName.invalid && form.controls.firstName.touched" />
-              </div>
-            </div>
-            <div class="mb-3 row">
-              <label for="lastName" class="col-sm-2 col-form-label">Last Name</label>
-              <div class="col-sm-10">
-                <input type="text" id="lastName" placeholder="Last Name" formControlName="lastName" class="form-control"
-                  [class.is-invalid]="form.controls.lastName.invalid && form.controls.lastName.touched" />
-                </div>
-              </div>
-
-              <div class="mb-3 row">
-                <label for="lastName" class="col-sm-2 col-form-label">Email</label>
-                <div class="col-sm-10">
-                  <input type="text" id="email" placeholder="Email" formControlName="email" class="form-control"
-                    [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched" />
-                  </div>
-                </div>
-            </form>
-          </div>
-          <div class="card-footer d-flex justify-content-end">
-            <button type="button" class="btn btn-sm btn-success me-1" (click)="saveContact()">
-              Submit
-            </button>
-            <button type="button" class="btn btn-sm btn-default" (click)="cancel()">
-              Cancel
-            </button>
-          </div>
-        </div>
-      }
+  <!-- Add/Edit Modal -->
+<div class="modal fade" id="AddEditModal" #AddEditModal tabindex="-1" aria-labelledby="AddEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="AddEditModalLabel">Add/Edit Contact</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <app-add-edit-contact *ngIf="mode === ModeEnum.ADD || mode === ModeEnum.EDIT" [mode]="mode" [contact]="currentContact" (save)="saveContact($event)" (cancel)="cancel()"> </app-add-edit-contact>
+      </div>      
     </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteConfirmationModalLabel">Confirmation</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this contact?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" (click)="removeContact()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
